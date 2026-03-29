@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Session</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>Create Climbing Session</h1>
+
+        <div class="nav-links">
+            <a class="btn btn-secondary" th:href="@{/sessions}">Back to Sessions</a>
+            <a class="btn" th:href="@{/dashboard}">Dashboard</a>
+        </div>
+
+        <form th:action="@{/sessions}" th:object="${climbingSession}" method="post">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="sessionDate">Session Date</label>
+                    <input type="date" id="sessionDate" th:field="*{sessionDate}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="gym">Gym</label>
+                    <select id="gym" th:field="*{gym}" required>
+                        <option value="">-- Select Gym --</option>
+                        <option th:each="gym : ${gyms}"
+                                th:value="${gym}"
+                                th:text="${gym.displayName}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group" style="grid-column: 1 / -1;">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" th:field="*{notes}" rows="4"></textarea>
+                </div>
+            </div>
+
+            <div class="actions-row" style="margin-top: 20px;">
+                <button type="submit">Save Session</button>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+</html>

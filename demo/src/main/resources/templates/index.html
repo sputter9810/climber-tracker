@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Climbing Tracker</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>Climbing Tracker</h1>
+        <p class="muted">
+            Track sessions, climbs, sends, flashes, and progress across Pulse Warners Bay and Pulse Adamstown.
+        </p>
+
+        <div class="nav-links">
+            <a class="btn" th:href="@{/dashboard}">Dashboard</a>
+            <a class="btn btn-link" th:href="@{/sessions}">View Sessions</a>
+            <a class="btn btn-secondary" th:href="@{/sessions/new}">Create Session</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

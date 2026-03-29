@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Session Detail</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+
+    <div th:if="${successMessage}" class="message message-success">
+        <p th:text="${successMessage}"></p>
+    </div>
+
+    <div th:if="${errorMessage}" class="message message-error">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <div class="card">
+        <h1>Session Detail</h1>
+
+        <div class="nav-links">
+            <a class="btn btn-secondary" th:href="@{/sessions}">Back to Sessions</a>
+            <a class="btn" th:href="@{/dashboard}">Dashboard</a>
+        </div>
+
+        <p><strong>ID:</strong> <span th:text="${climbingSession.id}"></span></p>
+        <p><strong>Date:</strong> <span th:text="${climbingSession.sessionDate}"></span></p>
+        <p><strong>Gym:</strong> <span th:text="${climbingSession.gym.displayName}"></span></p>
+        <p><strong>Notes:</strong> <span th:text="${climbingSession.notes}"></span></p>
+
+        <form th:action="@{/sessions/{id}/delete(id=${climbingSession.id})}" method="post">
+            <button type="submit" class="btn-danger">Delete Session</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Add Climb</h2>
+        <p class="form-help">Designed for quick logging on your phone while climbing.</p>
+
+        <form th:action="@{/sessions/{sessionId}/climbs(sessionId=${climbingSession.id})}"
+              th:object="${climbEntry}"
+              method="post">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="colour">Colour</label>
+                    <input type="text" id="colour" th:field="*{colour}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="grade">Grade</label>
+                    <input type="number" id="grade" th:field="*{grade}" min="1" max="10" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="climbingType">Climbing Type</label>
+                    <select id="climbingType" th:field="*{climbingType}" required onchange="updateWallSectionOptions()">
+                        <option value="">-- Select Type --</option>
+                        <option th:each="type : ${climbingTypes}"
+                                th:value="${type}"
+                                th:text="${type.displayName}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="wallSection">Wall Section</label>
+                    <select id="wallSection" th:field="*{wallSection}" required>
+                        <option value="">-- Select Section --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="attempts">Attempts</label>
+                    <input type="number" id="attempts" th:field="*{attempts}" min="1" required>
+                </div>
+            </div>
+
+            <div class="checkbox-row">
+                <div>
+                    <label for="completed">Completed</label>
+                    <input type="checkbox" id="completed" th:field="*{completed}">
+                </div>
+
+                <div>
+                    <label for="flashed">Flashed</label>
+                    <input type="checkbox" id="flashed" th:field="*{flashed}">
+                </div>
+            </div>
+
+            <div class="sticky-submit">
+                <button type="submit">Add Climb</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card">
+        <h2>Climbs</h2>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th>Colour</th>
+                    <th>Section</th>
+                    <th>Grade</th>
+                    <th>Type</th>
+                    <th>Attempts</th>
+                    <th>Completed</th>
+                    <th>Flashed</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:if="${climbingSession.climbEntries == null or climbingSession.climbEntries.isEmpty()}">
+                    <td colspan="8">No climbs added yet.</td>
+                </tr>
+                <tr th:each="climb : ${climbingSession.climbEntries}">
+                    <td th:text="${climb.colour}"></td>
+                    <td th:text="${climb.wallSection}"></td>
+                    <td th:text="${climb.grade}"></td>
+                    <td th:text="${climb.climbingType.displayName}"></td>
+                    <td th:text="${climb.attempts}"></td>
+                    <td>
+                        <span th:classappend="${climb.completed} ? 'boolean-pill boolean-pill-yes' : 'boolean-pill boolean-pill-no'"
+                              th:text="${climb.completed ? 'Yes' : 'No'}"></span>
+                    </td>
+                    <td>
+                        <span th:classappend="${climb.flashed} ? 'boolean-pill boolean-pill-yes' : 'boolean-pill boolean-pill-no'"
+                              th:text="${climb.flashed ? 'Yes' : 'No'}"></span>
+                    </td>
+                    <td>
+                        <div class="actions-row">
+                            <a class="btn btn-link"
+                               th:href="@{/sessions/{sessionId}/climbs/{climbId}/edit(sessionId=${climbingSession.id}, climbId=${climb.id})}">
+                                Edit
+                            </a>
+
+                            <form class="inline-form"
+                                  th:action="@{/sessions/{sessionId}/climbs/{climbId}/delete(sessionId=${climbingSession.id}, climbId=${climb.id})}"
+                                  method="post">
+                                <button type="submit" class="btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const gym = /*[[${climbingSession.gym.name()}]]*/ '';
+    const warnersBoulderSections = /*[[${warnersBoulderSections}]]*/ [];
+    const adamstownBoulderSections = /*[[${adamstownBoulderSections}]]*/ [];
+
+    function updateWallSectionOptions() {
+        const climbingTypeSelect = document.getElementById("climbingType");
+        const wallSectionSelect = document.getElementById("wallSection");
+
+        const selectedType = climbingTypeSelect.value;
+        const currentValue = wallSectionSelect.value;
+
+        wallSectionSelect.innerHTML = '<option value="">-- Select Section --</option>';
+
+        let options = [];
+
+        if (selectedType === "BOULDER") {
+            if (gym === "PULSE_WARNERS_BAY") {
+                options = warnersBoulderSections;
+            } else if (gym === "PULSE_ADAMSTOWN") {
+                options = adamstownBoulderSections;
+            }
+        } else if (selectedType === "TOP_ROPE") {
+            if (gym === "PULSE_ADAMSTOWN") {
+                for (let i = 1; i <= 50; i++) {
+                    options.push(String(i));
+                }
+            }
+        }
+
+        options.forEach(function(optionValue) {
+            const option = document.createElement("option");
+            option.value = optionValue;
+            option.textContent = optionValue;
+
+            if (optionValue === currentValue) {
+                option.selected = true;
+            }
+
+            wallSectionSelect.appendChild(option);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        updateWallSectionOptions();
+    });
+</script>
+</body>
+</html>

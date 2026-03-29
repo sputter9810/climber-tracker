@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>Climbing Dashboard</h1>
+
+        <div class="nav-links">
+            <a class="btn btn-secondary" th:href="@{/}">Home</a>
+            <a class="btn btn-link" th:href="@{/sessions}">View Sessions</a>
+            <a class="btn" th:href="@{/sessions/new}">Create Session</a>
+        </div>
+
+        <h2>Overview</h2>
+        <div class="metric-grid">
+            <div class="metric-card">
+                <h3>Total Sessions</h3>
+                <p th:text="${totalSessions}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Total Climbs</h3>
+                <p th:text="${totalClimbs}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Average Climbs / Session</h3>
+                <p th:text="${averageClimbsPerSession}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Completion Rate %</h3>
+                <p th:text="${completionRate}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Flash Rate %</h3>
+                <p th:text="${flashRate}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Average Attempted Grade</h3>
+                <p th:text="${averageAttemptedGrade}"></p>
+            </div>
+        </div>
+
+        <h2>Performance</h2>
+        <div class="metric-grid">
+            <div class="metric-card">
+                <h3>Hardest Completed Grade</h3>
+                <p th:text="${hardestCompletedGrade}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Hardest Flashed Grade</h3>
+                <p th:text="${hardestFlashedGrade}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Average Completed Grade</h3>
+                <p th:text="${averageCompletedGrade}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Average Attempts / Climb</h3>
+                <p th:text="${averageAttemptsPerClimb}"></p>
+            </div>
+        </div>
+
+        <h2>By Gym</h2>
+        <div class="metric-grid">
+            <div class="metric-card">
+                <h3>Pulse Warners Bay Climbs</h3>
+                <p th:text="${warnersBayClimbs}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Pulse Adamstown Climbs</h3>
+                <p th:text="${adamstownClimbs}"></p>
+            </div>
+        </div>
+
+        <h2>By Climbing Type</h2>
+        <div class="metric-grid">
+            <div class="metric-card">
+                <h3>Boulder Climbs</h3>
+                <p th:text="${boulderClimbs}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Top Rope Climbs</h3>
+                <p th:text="${topRopeClimbs}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Boulder Completion Rate %</h3>
+                <p th:text="${boulderCompletionRate}"></p>
+            </div>
+
+            <div class="metric-card">
+                <h3>Top Rope Completion Rate %</h3>
+                <p th:text="${topRopeCompletionRate}"></p>
+            </div>
+        </div>
+
+        <h2>Charts</h2>
+        <div class="metric-grid">
+            <div class="card">
+                <h3>Climbs by Grade</h3>
+                <div class="chart-box">
+                    <canvas id="gradeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Climbs by Type</h3>
+                <div class="chart-box">
+                    <canvas id="typeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Average Attempted Grade Over Time</h3>
+                <div class="chart-box">
+                    <canvas id="avgGradeChart"></canvas>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Hardest Completed Grade Over Time</h3>
+                <div class="chart-box">
+                    <canvas id="hardestGradeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <h2>By Grade</h2>
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Grade</th>
+                        <th>Attempts</th>
+                        <th>Completed</th>
+                        <th>Flashed</th>
+                        <th>Completion Rate %</th>
+                        <th>Flash Rate %</th>
+                        <th>Average Attempts</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${gradeBreakdown}">
+                        <td th:text="${row.grade}"></td>
+                        <td th:text="${row.attemptsCount}"></td>
+                        <td th:text="${row.completedCount}"></td>
+                        <td th:text="${row.flashedCount}"></td>
+                        <td th:text="${#numbers.formatDecimal(row.completionRate, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(row.flashRate, 1, 2)}"></td>
+                        <td th:text="${#numbers.formatDecimal(row.averageAttempts, 1, 2)}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <h2>Progress Over Time</h2>
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Sessions</th>
+                        <th>Climbs</th>
+                        <th>Average Attempted Grade</th>
+                        <th>Hardest Completed Grade</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:if="${#lists.isEmpty(progressOverTime)}">
+                        <td colspan="5">No progress data yet.</td>
+                    </tr>
+                    <tr th:each="row : ${progressOverTime}">
+                        <td th:text="${row.sessionDate}"></td>
+                        <td th:text="${row.sessionCount}"></td>
+                        <td th:text="${row.climbCount}"></td>
+                        <td th:text="${#numbers.formatDecimal(row.averageAttemptedGrade, 1, 2)}"></td>
+                        <td th:text="${row.hardestCompletedGrade}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const gradeChartLabels = /*[[${gradeChartLabels}]]*/ [];
+    const gradeChartAttempts = /*[[${gradeChartAttempts}]]*/ [];
+    const progressChartLabels = /*[[${progressChartLabels}]]*/ [];
+    const progressAvgGrades = /*[[${progressAvgGrades}]]*/ [];
+    const progressHardestGrades = /*[[${progressHardestGrades}]]*/ [];
+    const boulderClimbs = /*[[${boulderClimbs}]]*/ 0;
+    const topRopeClimbs = /*[[${topRopeClimbs}]]*/ 0;
+
+    new Chart(document.getElementById('gradeChart'), {
+        type: 'bar',
+        data: {
+            labels: gradeChartLabels,
+            datasets: [{
+                label: 'Climbs Attempted',
+                data: gradeChartAttempts
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    new Chart(document.getElementById('typeChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Boulder', 'Top Rope'],
+            datasets: [{
+                data: [boulderClimbs, topRopeClimbs]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    new Chart(document.getElementById('avgGradeChart'), {
+        type: 'line',
+        data: {
+            labels: progressChartLabels,
+            datasets: [{
+                label: 'Average Attempted Grade',
+                data: progressAvgGrades,
+                tension: 0.2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0,
+                    max: 10
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('hardestGradeChart'), {
+        type: 'line',
+        data: {
+            labels: progressChartLabels,
+            datasets: [{
+                label: 'Hardest Completed Grade',
+                data: progressHardestGrades,
+                tension: 0.2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: 0,
+                    max: 10
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

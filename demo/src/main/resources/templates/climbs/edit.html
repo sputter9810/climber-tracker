@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Climb</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+
+    <div th:if="${errorMessage}" class="message message-error">
+        <p th:text="${errorMessage}"></p>
+    </div>
+
+    <div class="card">
+        <h1>Edit Climb</h1>
+
+        <div class="nav-links">
+            <a class="btn btn-secondary" th:href="@{/sessions/{id}(id=${climbingSession.id})}">Back to Session</a>
+        </div>
+
+        <form th:action="@{/sessions/{sessionId}/climbs/{climbId}/edit(sessionId=${climbingSession.id}, climbId=${climbEntry.id})}"
+              th:object="${climbEntry}"
+              method="post">
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="colour">Colour</label>
+                    <input type="text" id="colour" th:field="*{colour}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="grade">Grade</label>
+                    <input type="number" id="grade" th:field="*{grade}" min="1" max="10" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="climbingType">Climbing Type</label>
+                    <select id="climbingType" th:field="*{climbingType}" required onchange="updateWallSectionOptions()">
+                        <option value="">-- Select Type --</option>
+                        <option th:each="type : ${climbingTypes}"
+                                th:value="${type}"
+                                th:text="${type.displayName}">
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="wallSection">Wall Section</label>
+                    <select id="wallSection" th:field="*{wallSection}" required>
+                        <option value="">-- Select Section --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="attempts">Attempts</label>
+                    <input type="number" id="attempts" th:field="*{attempts}" min="1" required>
+                </div>
+            </div>
+
+            <div class="checkbox-row">
+                <div>
+                    <label for="completed">Completed</label>
+                    <input type="checkbox" id="completed" th:field="*{completed}">
+                </div>
+
+                <div>
+                    <label for="flashed">Flashed</label>
+                    <input type="checkbox" id="flashed" th:field="*{flashed}">
+                </div>
+            </div>
+
+            <div class="sticky-submit">
+                <button type="submit">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const gym = /*[[${climbingSession.gym.name()}]]*/ '';
+    const existingWallSection = /*[[${climbEntry.wallSection}]]*/ '';
+    const warnersBoulderSections = /*[[${warnersBoulderSections}]]*/ [];
+    const adamstownBoulderSections = /*[[${adamstownBoulderSections}]]*/ [];
+
+    function updateWallSectionOptions() {
+        const climbingTypeSelect = document.getElementById("climbingType");
+        const wallSectionSelect = document.getElementById("wallSection");
+
+        const selectedType = climbingTypeSelect.value;
+
+        wallSectionSelect.innerHTML = '<option value="">-- Select Section --</option>';
+
+        let options = [];
+
+        if (selectedType === "BOULDER") {
+            if (gym === "PULSE_WARNERS_BAY") {
+                options = warnersBoulderSections;
+            } else if (gym === "PULSE_ADAMSTOWN") {
+                options = adamstownBoulderSections;
+            }
+        } else if (selectedType === "TOP_ROPE") {
+            if (gym === "PULSE_ADAMSTOWN") {
+                for (let i = 1; i <= 50; i++) {
+                    options.push(String(i));
+                }
+            }
+        }
+
+        options.forEach(function(optionValue) {
+            const option = document.createElement("option");
+            option.value = optionValue;
+            option.textContent = optionValue;
+
+            if (optionValue === existingWallSection) {
+                option.selected = true;
+            }
+
+            wallSectionSelect.appendChild(option);
+        });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        updateWallSectionOptions();
+    });
+</script>
+</body>
+</html>
